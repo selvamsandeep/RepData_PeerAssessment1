@@ -7,8 +7,8 @@
 ```r
 data <- read.csv("activity.csv", header = TRUE)
 
-# converting inveterl in to 00:00 time formate
-data$interval <- as.factor(sprintf("%02d:%02d", data$interval%/%100, data$interval%%100))
+# converting inveterl in to 00:00 time formate data$interval<-
+# as.factor(sprintf('%02d:%02d', data$interval%/%100 ,data$interval%%100))
 ```
 
 ## What is mean total number of steps taken per day?
@@ -55,11 +55,14 @@ data_melt <- melt(tempdata, id = "interval")
 AverageActivity <- dcast(data_melt, interval ~ variable, mean, na.rm = TRUE)
 g <- qplot(interval, steps, data = AverageActivity, group = 1, geom = "line") + 
     theme(aspect.ratio = 1/2)
-g <- g + labs(title = "Average daily activity")
-g + scale_x_discrete(breaks = AverageActivity$interval[seq(1, 288, by = 6)])
+g + labs(title = "Average daily activity")
 ```
 
 ![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2.png) 
+
+```r
+# g+ scale_x_discrete(breaks = AverageActivity$interval[seq(1,288, by = 6)])
+```
 
 
 ## Imputing missing values
@@ -75,20 +78,22 @@ data[is.na(data)] <- AverageActivity$steps
 
 ```r
 wdays <- strptime(data$date, format = "%Y-%m-%d")
-
 wd <- weekdays(wdays)
 we <- wd == "Saturday" | wd == "Sunday"
-
 wd[we] <- "weekends"
 wd[!we] <- "weekdays"
 data$date <- as.factor(wd)
 data_melt <- melt(data, id = c("date", "interval"))
 wdayNsteps <- dcast(data_melt, date + interval ~ variable, mean)
 g <- qplot(interval, steps, data = wdayNsteps, group = date, geom = "line") + 
-    theme(aspect.ratio = 1/2) + facet_grid(. ~ date, )
-g + scale_x_discrete(breaks = wdayNsteps$interval[seq(1, 288, by = 6)])
+    theme(aspect.ratio = 1/2)
+g + facet_grid(. ~ date, )
 ```
 
 ![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4.png) 
+
+```r
+# g+ scale_x_discrete(breaks = wdayNsteps$interval[seq(1,288, by = 6)])
+```
 
 
