@@ -6,7 +6,9 @@
 
 ```r
 data <- read.csv("activity.csv", header = TRUE)
-wdays <- strptime(data$date, format = "%Y-%m-%d")
+
+# converting inveterl in to 00:00 time formate
+data$interval <- as.factor(sprintf("%02d:%02d", data$interval%/%100, data$interval%%100))
 ```
 
 ## What is mean total number of steps taken per day?
@@ -46,13 +48,15 @@ median(stepsPerDay$steps, na.rm = TRUE)
 ## What is the average daily activity pattern?
 
 ```r
-
+library(ggplot2)
 tempdata <- data.frame(data$steps, data$interval)
 names(tempdata) <- c("steps", "interval")
 data_melt <- melt(tempdata, id = "interval")
-AvarageDailyActivity <- dcast(data_melt, interval ~ variable, mean, na.rm = TRUE)
-with(AvarageDailyActivity, plot(interval, steps, main = "Average daily activity pattern", 
-    type = "l", xlab = "interval", ylab = "Average steps"))
+AverageActivity <- dcast(data_melt, interval ~ variable, mean, na.rm = TRUE)
+g <- qplot(interval, steps, data = AverageActivity, group = 1, geom = "line") + 
+    theme(aspect.ratio = 1/2)
+g <- g + labs(title = "Average daily activity")
+g + scale_x_discrete(breaks = AverageActivity$interval[seq(1, 288, by = 6)])
 ```
 
 ![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2.png) 
@@ -61,5 +65,30 @@ with(AvarageDailyActivity, plot(interval, steps, main = "Average daily activity 
 ## Imputing missing values
 
 
+```r
+data[is.na(data)] <- AverageActivity$steps
+```
+
+
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```r
+wdays <- strptime(data$date, format = "%Y-%m-%d")
+
+wd <- weekdays(wdays)
+we <- wd == "Saturday" | wd == "Sunday"
+
+wd[we] <- "weekends"
+wd[!we] <- "weekdays"
+data$date <- as.factor(wd)
+data_melt <- melt(data, id = c("date", "interval"))
+wdayNsteps <- dcast(data_melt, date + interval ~ variable, mean)
+g <- qplot(interval, steps, data = wdayNsteps, group = date, geom = "line") + 
+    theme(aspect.ratio = 1/2) + facet_grid(. ~ date, )
+g + scale_x_discrete(breaks = wdayNsteps$interval[seq(1, 288, by = 6)])
+```
+
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4.png) 
+
+
