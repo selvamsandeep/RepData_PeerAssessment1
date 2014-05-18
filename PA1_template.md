@@ -85,15 +85,11 @@ wd[!we] <- "weekdays"
 data$date <- as.factor(wd)
 data_melt <- melt(data, id = c("date", "interval"))
 wdayNsteps <- dcast(data_melt, date + interval ~ variable, mean)
-g <- qplot(interval, steps, data = wdayNsteps, group = date, geom = "line") + 
-    theme(aspect.ratio = 1/2)
-g + facet_grid(. ~ date, )
+library(lattice)
+xyplot(steps ~ interval | date, data = wdayNsteps, type = "l", main = "Activtiy patterns between weekdays and weekends", 
+    layout = c(1, 2))
 ```
 
 ![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4.png) 
-
-```r
-# g+ scale_x_discrete(breaks = wdayNsteps$interval[seq(1,288, by = 6)])
-```
 
 
